@@ -1,0 +1,45 @@
+{
+	"settings": {
+	  "index.refresh_interval": "5s",
+	  "number_of_shards": 1
+	},
+	"mappings": {
+	  "properties": {
+		"product_id": {
+		  "type": "keyword"
+		},
+		"product_name": {
+		  "type" : "text"
+		},
+		"product_shortdescription" : {
+		  "type" : "text"
+		},
+		  "manufacturer_name": {
+		  "type": "text"
+		},
+		"cover_id": {
+		  "type": "keyword"
+		},
+		"cover_name": {
+		  "type" : "keyword"
+		},
+		"relative_path" : {
+		  "type" : "keyword"
+		},
+	
+		"cover_embeddings": {
+		  "type": "dense_vector",
+		  "dims": 512,
+		  "index": true,
+		  "similarity": "cosine"
+		},
+	
+		"text_embeddings": {
+		  "type": "dense_vector",
+		  "dims": 512,
+		  "index": true,
+		  "similarity": "cosine"
+		}
+	  }
+	}
+  }

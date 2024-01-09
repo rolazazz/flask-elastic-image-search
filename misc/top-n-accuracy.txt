@@ -1,0 +1,74 @@
+top-n accuracy on 25k most recent products, coverimage versus all the other images
+
+
+clip-ViT-B-32
+Duration Top-N Accuracy algorithm = 8557.128477599937, Image Count = 82182
+Top1: 0.1879121948845246; Top3: 0.2598379207125648; Top5:0.29128032902582074; Top10: 0.29128032902582074
+
+clip-ViT-L-14
+Duration Top-N Accuracy algorithm = 42857.24936029996, Image Count = 82182
+Top1: 0.24943418266773745; Top3: 0.3386386313304617; Top5:0.3758365578837215; Top10: 0.3758365578837215
+
+--
+
+OpenClip-ViT-B-32-laion2B
+Duration Top-N Accuracy algorithm = 8175.032113599998, Image Count = 81615
+Top1: 0.2850701464191631; Top3: 0.3853703363352325; Top5:0.4245910678184157; Top10: 0.47350364516326654
+
+OpenClip-ViT-L-14-laion2B
+Duration Top-N Accuracy algorithm = 19889.720432500006, Image Count = 81615
+Top1: 0.33513447282974945; Top3: 0.4431538320161735; Top5:0.4846535563315567; Top10: 0.5329657538442688
+
+FashionClip
+Duration Top-N Accuracy algorithm = 16457.2292206, Image Count = 81615
+Top1: 0.2852539361636954; Top3: 0.38170679409422287; Top5:0.41992280830729645; Top10: 0.4673895729951602
+
+
+
+
+
+
+Embeddings extractions @ i7-9700-3Ghz / RTX 2060
+openclip-ViT-B-32: 18 it/s
+openclip-ViT-B-32 with GPU: 50 it/s
+openclip-ViT-L-14: 1,8 it/s
+openclip-ViT-L-14 with GPU: 18 it/s
+
+
+
+Custom api INFERENCE using py + fastapi + base64 + openclip (i7-10750H-2.60 Ghz / GTX 1650)
+openclip-ViT-B-32: 260/320 ms (internal 240/280 ms)
+openclip-ViT-B-32 with GPU: 100 ms (internal 80 ms)
+
+
+Custom api INFERENCE using py + fastapi + base64 + openclip (i7-9700-3Ghz / RTX 2060)
+openclip-ViT-B-32: 80 ms (internal 73 ms)
+openclip-ViT-B-32 with GPU: 81 ms (internal 77 ms)
+openclip-ViT-L-14: 626 ms (internal 621 ms)
+openclip-ViT-L-14 with GPU: 271 ms (internal 266 ms)
+
+
+Inferless.com using python wrapper + openclip (Nvidia T4 shared)
+latency (min 105, max 123 ms)
+openclip-ViT-B-32 with GPU: 170 ms (internal 16 ms)
+openclip-ViT-L-14 with GPU: 250 ms (internal 95 ms)
+
+
+
+Index size (OpenSearch)
+openclip-ViT-B-32: 287724 docs, 3.29gb/node
+openclip-ViT-L-14: 287724 docs, 5gb/node
+
+Index size (ElasticSearch)
+openclip-ViT-B-32: 287724 docs, 2.82gb/node
+openclip-ViT-L-14: 287724 docs, 4.15gb/node
+
+
+
+Query time (OpenSearch)
+openclip-ViT-B-32: 75 ms (internal took 14) 
+openclip-ViT-L-14: 88 ms (internal took 36)
+
+Query time (ElasticSearch)
+openclip-ViT-B-32: 78 ms (internal took 22) 
+openclip-ViT-L-14: 82 ms (internal took 32)

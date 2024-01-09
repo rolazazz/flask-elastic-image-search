@@ -1,0 +1,79 @@
+{
+	"settings": {
+	  "index.number_of_shards": 1,
+	  "index.number_of_replicas": 1,
+	  "index.refresh_interval": "5s",
+	  "index.knn": true,
+	  "knn.algo_param.ef_search": 100
+	},
+	"mappings": {
+	  "properties": {
+		"product_id": {
+		  "type": "keyword"
+		},
+		"product_name": {
+		  "type" : "text"
+		},
+		"product_shortdescription" : {
+		  "type" : "text"
+		},
+		"manufacturer_name": {
+		  "type": "text"
+		},
+		"cover_id": {
+		  "type": "keyword"
+		},
+		"cover_name": {
+		  "type" : "keyword"
+		},
+		"relative_path" : {
+		  "type" : "keyword"
+		},
+		"text_embeddings": {
+			"type": "knn_vector",
+			"dimension": 768,
+			"method": {
+				"name": "hnsw",
+				"space_type": "l2",
+				"engine": "nmslib",
+				"parameters": {"ef_construction": 512, "m": 16}
+			}
+		},
+		"cover_embeddings": {
+			"type": "knn_vector",
+			"dimension": 768,
+			"method": {
+			  "name": "hnsw",
+			  "space_type": "cosinesimil",
+			  "engine": "nmslib",
+			  "parameters": {"ef_construction": 512, "m": 16}
+			}
+		  },  
+
+		"images": {
+		  "type" : "nested",
+		  "properties": {
+			"image_id": {
+				"type": "keyword"
+			},
+			"image_filename": {
+				"type" : "keyword"
+			},
+			"relative_path" : {
+				"type" : "keyword"
+			},
+			"image_embedding": {
+				"type": "knn_vector",
+				"dimension": 768,
+				"method": {
+					"name": "hnsw",
+					"space_type": "cosinesimil",
+					"engine": "nmslib",
+					"parameters": {"ef_construction": 512, "m": 16}
+				}
+			}
+		  }
+		}
+	  }
+	}
+  }

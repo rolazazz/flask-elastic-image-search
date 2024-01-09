@@ -1,4 +1,7 @@
 es-docker
+image_embeddings
+app/static/product-images
+app/static/variant-images
 **/.DS_Store
 .git
 .idea

@@ -1,0 +1,11 @@
+banana.dev		0.000644 (A5000)
+
+replicate		0.001150 (A100)
+inferless		0.000745 (A100)
+beam.cloud		0.00091388 (A100)
+runpod			0.00055278 (A100 80gb)
+
+
+replicate		0.000225 (T4)
+inferless		0.000092 (T4)
+beam.cloud		0.00017222 (T4)

@@ -1,8 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="title">Elasticsearch Image search</h1>
-<p>
-    Welcome to demo of similarity image search using Elasticsearch.
-</p>
+
+    <!-- Intro Testuale-->
+    <section class="hero-section">
+        <div class="container">
+            <div class="intro-wrapper">
+                <p class="intro-title">Immagina, cerca, trova.</p>
+                <h1 class="intro-subtitle">In un solo catalogo.</h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Bar -->
+    <div class="search-wrapper w-form">
+        <form id="email-form" action="{{ url_for('image_search') }}"  method="post" novalidate name="email-form" data-name="Email Form" class="searchbar-wrapper" data-wf-page-id="64ec61e8da9f3850070848c5" data-wf-element-id="f2217cc3-f753-13e6-4f4a-18e12d9b4119">
+			{{ form.hidden_tag() }}
+            <!-- Search Input -->
+			{{ form.searchbox(type="text", maxlength=256, class_="searchbar w-input") }}
+            <!-- <input type="text" class="searchbar w-input" maxlength="256" name="Searchbar-2" data-name="Searchbar 2" placeholder="Cerca tra 319.452 prodotti, brand e news" id="Searchbar-2" required=""> -->
+			<input type="submit" value="Invia" style="display: none;"> <!-- Questo pulsante è nascosto ma consente l'invio del modulo con Invio -->
+
+            <div class="search-brands-wrapper">
+                <div class="search-brand"><img src="static/images/Search-Brand-Image.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+                <div class="search-brand"><img src="static/images/Search-Brand-Image_1.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+                <div class="search-brand"><img src="static/images/Search-Brand-Image_2.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+            </div>
+        </form>
+    </div>
+    <!-- Fine Search Bar -->
+
+    <!-- Background Frociata -->
+    <div class="home-section">
+        <div class="home-background-wrapper">
+            <div class="home-column"><img src="static/images/Home-Card.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_1.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card">
+                <img src="static/images/Home-Card_2.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_2.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""
+                    class="home-card"></div>
+            <div class="home-column-2"><img src="static/images/Home-Card_3.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_4.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card">
+                <img src="static/images/Home-Card_4.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_4.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""
+                    class="home-card"></div>
+            <div class="home-column-3"><img src="static/images/Home-Card_5.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_6.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card">
+                <img src="static/images/Home-Card_6.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"></div>
+			<div class="home-column-4"><img src="static/images/Home-Card_7.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_8.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""class="home-card">
+				<img src="static/images/Home-Card_8.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"></div>
+				<div class="home-column-3"><img src="static/images/Home-Card_9.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_10.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""
+                    class="home-card"><img src="static/images/Home-Card_10.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"></div>
+            <div class="home-column-2"><img src="static/images/Home-Card_11.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_12.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""
+                    class="home-card"><img src="static/images/Home-Card_12.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_12.png" loading="lazy" width="167.8343963623047" height="249.77708435058594"
+                    alt="" class="home-card"></div>
+            <div class="home-column"><img src="static/images/Home-Card_13.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_14.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt=""
+                    class="home-card"><img src="static/images/Home-Card_15.png" loading="lazy" width="167.8343963623047" height="249.77708435058594" alt="" class="home-card"><img src="static/images/Home-Card_15.png" loading="lazy" width="167.8343963623047" height="249.77708435058594"
+                    alt="" class="home-card"></div>
+        </div>
+        <div class="home-overlay"></div>
+    </div>
+
 {% endblock %}

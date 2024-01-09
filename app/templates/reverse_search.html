@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- <h1 class="title">Similar Image</h1> -->
+{% if not missing_index %}
+{% if model_up %}
+    {% if err %}
+    <div class="box has-background-danger-light">
+        <p>
+            <strong>{{ err }}</strong>
+        </p>
+    </div>
+    {% endif %}
+
+<!-- <section class="section">
+    <div class="box has-background-warning-light">
+        <p>
+            <b>Upload the image you want to search similar one to.</b>
+        </p>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        <p>
+        <div class="field">
+            {{ form.hidden_tag() }}
+            {{ form.file(size=32, class_="input is-info") }}
+        </div>
+        </p>
+        <p>{{ form.submit(class_="button is-info") }}</p>
+    </form>
+</section> -->
+
+    <!-- Main Section  -->
+    <section class="listing-section">
+        <div class="container">
+
+    <!-- Intro Testuale -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="intro-wrapper">
+                <p class="intro-title">Cerca, identifica, acquista.</p>
+                <h1 class="intro-subtitle">Tutto ciò che vedi.</h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Bar con Upload -->
+    <div class="search-wrapper w-form">
+        <form id="searchForm" name="searchForm" data-name="Search Form" class="searchbar-wrapper" data-wf-page-id="64e8ce0908c0d34204799c36" data-wf-element-id="116c01f9-b412-4556-8f1e-9e87b99d4022"
+		method="post" enctype="multipart/form-data" onchange="this.submit()">
+            <div class="upload-button-wrapper {{'with-image' if search_results }}">
+
+				{% if not search_results %}
+				<div class="upload-button-cta">Carica un&#x27;immagine e trova prodotti simili</div>
+				{% else %}
+				<div class="upload-preview-wrapper">
+                    <!-- Immagine caricata -->
+                    <img src="{{ original_file }}" loading="lazy" sizes="40px" alt="" class="image">
+                    <!-- Div per annullare l'upload e ricominciare -->
+                    <a href="{{ url_for('reverse_search') }}" class="icon-22 reset w-embed">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--carbon" width="100%" height="100%" preserveaspectratio="xMidYMid meet" viewbox="0 0 32 32"><path fill="currentColor" d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2zm5.4 21L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4l-1.6 1.6z"></path></svg></a>
+                </div>
+                <!-- Nome file caricato -->
+                <div class="upload-button-cta with-margin">{{ filename }}</div>
+				{% endif %}
+
+                <!-- Upload Button -->
+                <label class="upload-button w-inline-block">
+                    <svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon-22 w-embed iconify iconify--tabler" width="100%" height="100%" preserveaspectratio="xMidYMid meet" viewbox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 18a4.6 4.4 0 0 1 0-9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"></path><path d="m9 15l3-3l3 3m-3-3v9"></path></g></svg>
+                    <div class="upload-button-text">UPLOAD</div>
+					{{ form.hidden_tag() }}
+					{{ form.file(size=32, style="display:none") }}
+                </label>
+                <!-- Fine Upload Button -->
+
+            </div>
+        </form>
+    </div>
+    <!-- Fine Search Bar con Upload -->
+
+
+    {% if search_results %}
+
+	<form form id="similarForm" method="post" action="{{ url_for('image_search') }}" novalidate>
+		{{ form.hidden_tag() }}
+
+		<!-- Listing dei prodotti-->
+		<div class="listing-grid">
+
+			{% for document in search_results %}
+
+			<!-- Product Card -->
+			<div class="product-card">
+				<div class="product-image-wrapper">
+
+					<!-- Immagine del prodotto -->
+					<img src="https://img.edilportale.com/product-thumbs/{{ document.fields.cover_name[0] }}" loading="lazy" 
+						title="{{document._score}}" class="product-image">
+					<div class="product-card-actions-wrapper">
+						<div class="product-card-action">
+							<div class="action-text">Salva</div>
+							<div class="icon-22 actions w-embed"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="100%" height="100%" preserveaspectratio="xMidYMid meet" viewbox="0 0 256 256"><path fill="currentColor" d="M178 32c-20.65 0-38.73 8.88-50 23.89C116.73 40.88 98.65 32 78 32a62.07 62.07 0 0 0-62 62c0 70 103.79 126.66 108.21 129a8 8 0 0 0 7.58 0C136.21 220.66 240 164 240 94a62.07 62.07 0 0 0-62-62Zm-50 174.8C109.74 196.16 32 147.69 32 94a46.06 46.06 0 0 1 46-46c19.45 0 35.78 10.36 42.6 27a8 8 0 0 0 14.8 0c6.82-16.67 23.15-27 42.6-27a46.06 46.06 0 0 1 46 46c0 53.61-77.76 102.15-96 112.8Z"></path></svg></div>
+						</div>
+
+						<!-- Action Trova Simili -->
+						<button  name="find_similar_image" value="{{ document.fields.cover_id[0] }}" type="submit" class="product-card-action">
+							<div class="action-text">Trova simili</div><img src="static/images/Similar.svg" loading="lazy" alt="" class="icon-22 actions">
+						</button>
+
+					</div>
+				</div>
+				<div class="product-info-wrapper">
+
+					<!-- Brand -->
+					<div class="product-info">{{ document.fields.manufacturer_name[0] }}</div>
+
+					<!-- Nome Prodotto -->
+					<div class="product-info description">{{ document.fields.product_name[0] }} - {{ document.fields.product_shortdescription[0] }}<br></div>
+
+					<div class="product-info cta">Richiedi info</div>
+				</div>
+			</div>
+			<!-- Fine Product Card -->
+
+			{% endfor %}
+
+
+		</div>
+	</form>
+	{% else %}
+	<div class="home-section"><img src="static/images/Illustrazione.svg" loading="lazy" alt="" class="image-2"></div>
+    {% endif %}
+
+
+	</div>
+	</section>
+
+{% else %}
+<div class="box has-background-danger-light">
+    <p>
+        <strong> The NLP model ({{ model_name }}) required for this task is unavailable in Elasticsearch cluster. </br>Please make sure
+            the model is up and running.</strong>
+    </p>
+</div>
+
+{% endif %}
+
+{% else %}
+<div class="box has-background-danger-light">
+    <p>
+        <strong> The Index ({{ index_name }}) required for this task is unavailable in Elasticsearch cluster. </br>Please make sure
+            the index is available.</strong>
+    </p>
+</div>
+{% endif %}
+{% endblock %}

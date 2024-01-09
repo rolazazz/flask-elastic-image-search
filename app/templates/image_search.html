@@ -2,16 +2,16 @@
 
 {% block content %}
 
-<h1 class="title">Image Search</h1>
+<!-- <h1 class="title">Image Search</h1> -->
 {% if not missing_index %}
 {% if model_up %}
-<section class="section">
+<!-- <section class="section">
     <div class="box has-background-warning-light">
         <p>
             <b>Try one of the following examples:</b>
             <ul>
-                <li>A mountain covered in snow</li>
-                <li>Valentine day flowers</li>
+                <li>red sofa</li>
+                <li>wooden rouded table</li>
             </ul>
         </p>
     </div>
@@ -24,52 +24,103 @@
         </div>
         </p>
         <p>{{ form.submit(class_="button is-info") }}</p>
-</section>
+</section> -->
+
+    <!-- Search Bar -->
+    <div class="search-wrapper w-form">
+        <form id="email-form" action="{{ url_for('image_search') }}"  method="post" novalidate name="email-form" data-name="Email Form" class="searchbar-wrapper" data-wf-page-id="64ec61e8da9f3850070848c5" data-wf-element-id="f2217cc3-f753-13e6-4f4a-18e12d9b4119">
+			{{ form.hidden_tag() }}
+            <!-- Search Input -->
+			{{ form.searchbox(type="text", maxlength=256, class_="searchbar w-input") }}
+            <!-- <input type="text" class="searchbar w-input" maxlength="256" name="Searchbar-2" data-name="Searchbar 2" placeholder="Cerca tra 319.452 prodotti, brand e news" id="Searchbar-2" required=""> -->
+			<input type="submit" value="Invia" style="display: none;"> <!-- Questo pulsante è nascosto ma consente l'invio del modulo con Invio -->
+
+            <div class="search-brands-wrapper">
+                <div class="search-brand"><img src="static/images/Search-Brand-Image.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+                <div class="search-brand"><img src="static/images/Search-Brand-Image_1.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+                <div class="search-brand"><img src="static/images/Search-Brand-Image_2.png" loading="lazy" width="20" height="20" alt="" class="search-brand-image"></div>
+            </div>
+        </form>
+    </div>
+    <!-- Fine Search Bar -->
+
 
 {% if search_results %}
 
-<section>
-    {% if image_id_to_search_for %}
-        <br />
-        <div>Finding images similar to {{image_id_to_search_for}}
+    <!-- Main Section  -->
+    <section class="listing-section">
+        <div class="container">
+
+			{% if image_id_to_search_for %}
+
+            <!-- Reference Tab con immagine di riferimento dopo aver cliccato su "Trova Simili"  -->
+            <div class="riferimento-wrapper">
+                <div class="product-image-wrapper"><img src="https://img.edilportale.com/product-thumbs/{{ found_image.cover_name }}" loading="lazy"
+                        alt="" class="product-image"></div>
+                <div id="w-node-_9685b43f-5b7f-3f5d-ed55-779fe48e425a-b0a2b8c9" class="riferimento-info-wrapper">
+
+                    <!-- Immagine di riferimento -->
+                    <div class="riferimento-info-title">immagine di riferimento</div>
+                    <div class="product-info-wrapper">
+
+                        <!-- Brand del prodotto -->
+                        <div class="product-info">{{ found_image.manufacturer_name }}</div>
+
+                        <!-- Nome e descrizione prodotto -->
+                        <div class="product-info description">{{ found_image.product_name }} - {{ found_image.product_shortdescription }}<br></div>
+                    </div>
+                </div>
+            </div>
+
+			{% endif %}
+			<form id="similarForm" method="post">
+			{{ form.hidden_tag() }}
+            <!-- Listing dei prodotti-->
+            <div class="listing-grid">
+
+				{% for document in search_results %}
+
+                <!-- Product Card -->
+                <div class="product-card">
+                    <div class="product-image-wrapper">
+
+                        <!-- Immagine del prodotto -->
+                        <img src="https://img.edilportale.com/product-thumbs/{{ document.fields.cover_name[0] }}" loading="lazy" 
+                            title="{{document._score}}" class="product-image">
+                        <div class="product-card-actions-wrapper">
+                            <div class="product-card-action">
+                                <div class="action-text">Salva</div>
+                                <div class="icon-22 actions w-embed"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ph" width="100%" height="100%" preserveaspectratio="xMidYMid meet" viewbox="0 0 256 256"><path fill="currentColor" d="M178 32c-20.65 0-38.73 8.88-50 23.89C116.73 40.88 98.65 32 78 32a62.07 62.07 0 0 0-62 62c0 70 103.79 126.66 108.21 129a8 8 0 0 0 7.58 0C136.21 220.66 240 164 240 94a62.07 62.07 0 0 0-62-62Zm-50 174.8C109.74 196.16 32 147.69 32 94a46.06 46.06 0 0 1 46-46c19.45 0 35.78 10.36 42.6 27a8 8 0 0 0 14.8 0c6.82-16.67 23.15-27 42.6-27a46.06 46.06 0 0 1 46 46c0 53.61-77.76 102.15-96 112.8Z"></path></svg></div>
+                            </div>
+
+                            <!-- Action Trova Simili -->
+                            <button  name="find_similar_image" value="{{ document.fields.cover_id[0] }}" type="submit" class="product-card-action">
+                                <div class="action-text">Trova simili</div><img src="static/images/Similar.svg" loading="lazy" alt="" class="icon-22 actions">
+							</button>
+
+                        </div>
+                    </div>
+                    <div class="product-info-wrapper">
+
+                        <!-- Brand -->
+                        <div class="product-info">{{ document.fields.manufacturer_name[0] }}</div>
+
+                        <!-- Nome Prodotto -->
+                        <div class="product-info description">{{ document.fields.product_name[0] }} - {{ document.fields.product_shortdescription[0] }}<br></div>
+
+                        <div class="product-info cta">Richiedi info</div>
+                    </div>
+                </div>
+                <!-- Fine Product Card -->
+
+				{% endfor %}
+
+            </div>
+			</form>
         </div>
-    {% endif %}
+    </section>
+    <!-- Fine Main Section  -->
 
-    <div class="container">
-        Search Query: {{ query }}
-        <hr>
-        <table class="table is-striped is-fullwidth">
-            <thead>
-            <tr>
-                <th><abbr title="Image ID">Image id</abbr></th>
-                <th><abbr title="Image name">Image name</abbr></th>
-                <th><abbr title="Score">Score</abbr></th>
-                <th><abbr title="Photo">Photo</abbr></th>
-            </tr>
-            </thead>
-            {% for document in search_results %}
-
-            <tr>
-                <td>
-                    {{ document.fields.image_id[0] }}
-                </td>
-                <td>
-                    {{ document.fields.image_name[0] }}
-                </td>
-                <td>
-                    {{ document._score }}
-                </td>
-                <td>
-                    <img src="static/images/{{ document.fields.relative_path[0] }}"
-                         alt="{{ document.fields.image_name[0] }}" width="400">
-                    <button name="find_similar_image" value="{{ document.fields.image_id[0] }}" id="add-update"
-                            type="submit" class="button is-info">Find similar images</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-</section>
 
 {% endif %}
 
