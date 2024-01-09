@@ -1,5 +1,5 @@
 # docker build -t vsearch:beta2 .
-# docker run -d -p 5001:5001 --network image-search-8-9_default --link image-search-8-9-es01-1:es01 -v model-cache:/root/.cache --env ES_HOST="https://es01:9200" --env APPLICATION_ROOT="/lens" --name vsearch vsearch:beta1
+# docker run -d -p 5001:5001 --network visualsearch-net -v model-cache:/root/.cache --env ES_HOST="https://opensearch-node1:9200" --env APPLICATION_ROOT="/lens" --name vsearch2 robertolazazzera/vsearch:beta2
 
 # push to registry (docker login -u robertolazazzera)
 # docker tag vsearch:beta2 robertolazazzera/vsearch:beta2

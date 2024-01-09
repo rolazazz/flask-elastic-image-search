@@ -82,7 +82,7 @@ def image_search():
                 if (image_info is not None):
 
                     found_image = image_info['hits']['hits'][0]["_source"]
-                    found_image_embedding = found_image['cover_embedding']
+                    found_image_embedding = found_image['cover_embeddings']
                     search_response = knn_search_images(found_image_embedding)
 
                     return render_template('image_search.html', title='Image Search', form=form,
@@ -204,7 +204,7 @@ def sentence_embedding_ml(query: str, model, tokenizer):
 def knn_search_images(dense_vector: list):
     source_fields = ["product_id", "product_name", "product_shortdescription", "manufacturer_name", "cover_id", "cover_name"]
     # query = {
-    #     "field": "image_embedding",
+    #     "field": "image_embeddings",
     #     "query_vector": dense_vector,
     #     "k": 60,
     #     "num_candidates": 120,
@@ -233,7 +233,7 @@ def knn_search_images(dense_vector: list):
 				"should" : [
                     {
 					"knn": {
-						"cover_embedding":{
+						"cover_embeddings":{
 							"k": 60,
 							"vector": dense_vector
 						}
@@ -261,7 +261,7 @@ def knn_search_text(text, dense_vector: list):
 				"must" : [
                     {
 					"knn": {
-						"cover_embedding":{
+						"cover_embeddings":{
 							"k": 50,
 							"vector": dense_vector
 						}
@@ -269,7 +269,7 @@ def knn_search_text(text, dense_vector: list):
                     # ,
                     # {
 					# "knn": {
-					# 	"text_embedding":{
+					# 	"text_embeddings":{
 					# 		"k": 60,
 					# 		"vector": dense_vector
 					# 	}
