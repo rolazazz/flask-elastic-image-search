@@ -96,8 +96,8 @@ def main():
         try:
 
             def image_map(data):
-                filename = f"b_{data['FileName']}"
-                filepath = f"{PATH_TO_IMAGES}{filename}"
+                filename = f"{data['FileName']}"
+                filepath = f"{PATH_TO_IMAGES}b_{filename}"
                 if os.path.exists(filepath):
                     image = Image.open(filepath)
                     embeddings = clip_image_embedding(image, preprocess, clipmodel, device).tolist()
@@ -119,7 +119,7 @@ def main():
                 'product_shortdescription': row['ShortDescription']['Value']['en'],
                 'manufacturer_name': row['Manufacturer']['Name'],
                 'cover_id': filename,
-                'cover_name': os.path.basename(filename),
+                'cover_name': filename,
                 'cover_embeddings': embeddings,
                 # 'relative_path': os.path.relpath(filepath).split(PREFIX)[1],
                 'images': [image_map(x) for x in row['Images']],
