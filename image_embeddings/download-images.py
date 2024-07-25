@@ -7,7 +7,7 @@ from multiprocessing.pool import ThreadPool
 import urllib.request
 from urllib.parse import urlparse, quote
 
-PREFIX = "C:\\AppData\\product-images\\"
+PREFIX = "D:\\AppData\\product-images\\"
 # Path where the photos will be downloaded
 photos_donwload_path = Path(PREFIX)
 

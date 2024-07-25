@@ -2,9 +2,9 @@ from flask import Flask
 from config import Config
 from app.prefixMiddleware import PrefixMiddleware
 from torch import torch
-# from sentence_transformers import SentenceTransformer
-# from transformers import CLIPProcessor, CLIPModel
 import open_clip
+from sentence_transformers import SentenceTransformer
+# from transformers import CLIPProcessor, CLIPModel
 from opensearchpy import OpenSearch, SSLError
 from opensearchpy.helpers import parallel_bulk
 # from elasticsearch import Elasticsearch
@@ -19,7 +19,9 @@ print(f'ElasticSearch Host = {Config.ELASTICSEARCH_HOST}')
 # Load model, run against the image and create image embedding
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Huggingface SentenceTransformer
-#st_model = SentenceTransformer('clip-ViT-L-14', device=device)
+#st_model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L6-v2', device=device)
+# st_model = SentenceTransformer('intfloat/e5-large-v2', device=device)
+st_model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
 
 # Huggingface Transformer
 # model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
@@ -32,11 +34,12 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # clipmodel, preprocess = clip.load("C:\\Repos\\finetuning\\model_checkpoint\\model_10.pt", device=device)
 
 # OpenClip
-clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k', device=device)
+# clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k', device=device)
 # clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-L-14', pretrained='laion2b_s32b_b82k', device=device)
 # clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='C:\\Repos\\finetuning\\logs\\ciccio\\checkpoints\\epoch_3.pt', device=device)
-# clipmodel, _, preprocess = open_clip.create_model_and_transforms('xlm-roberta-base-ViT-B-32', pretrained='laion5b_s13b_b90k', device=device)
-tokenizer = open_clip.get_tokenizer('ViT-B-32')
+clipmodel, _, preprocess = open_clip.create_model_and_transforms('xlm-roberta-base-ViT-B-32', pretrained='laion5b_s13b_b90k', device=device)
+# tokenizer = open_clip.get_tokenizer('ViT-B-32')
+tokenizer = open_clip.get_tokenizer('xlm-roberta-base-ViT-B-32')
 
 
 

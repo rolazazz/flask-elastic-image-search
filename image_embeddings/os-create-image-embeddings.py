@@ -1,11 +1,4 @@
-import os
-import sys
-import glob
-import time
-import json
-import argparse
-# from sentence_transformers import SentenceTransformer
-from transformers import CLIPProcessor, CLIPModel
+import os, sys, glob, time, json, argparse
 from opensearchpy import OpenSearch, SSLError
 from opensearchpy.helpers import parallel_bulk
 from PIL import Image
@@ -14,6 +7,8 @@ from datetime import datetime
 # from exif import Image as exifImage
 import torch
 # import clip
+from sentence_transformers import SentenceTransformer
+# from transformers import CLIPProcessor, CLIPModel
 import open_clip
 
 
@@ -22,11 +17,11 @@ ES_USER = "admin"
 ES_PASSWORD = "admin"
 ES_TIMEOUT = 3600
 
-DEST_INDEX = "embeddings-openclip-l-14"
+DEST_INDEX = "openclip-xlm-roberta-base-ViT-B-32-multilingual-e5-large"
 DELETE_EXISTING = True
 CHUNK_SIZE = 100
 
-PATH_TO_IMAGES = "C:\\AppData\\product-images\\"
+PATH_TO_IMAGES = "D:\\AppData\\product-images\\"
 PREFIX = "app\\static\\product-images\\"
 
 CA_CERT=''#'./app/conf/ca.crt'
@@ -67,6 +62,8 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Huggingface SentenceTransformer
     #st_model = SentenceTransformer('clip-ViT-L-14', device=device)
+    st_model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
+    #st_model = SentenceTransformer('Muennighoff/SGPT-125M-weightedmean-nli-bitfit', device=device)
 
 	# Huggingface Transformer
     # model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
@@ -80,17 +77,17 @@ def main():
     
 	# OpenClip
     # clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k', device=device)
-    clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-L-14', pretrained='laion2b_s32b_b82k', device=device)
+    # clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-L-14', pretrained='laion2b_s32b_b82k', device=device)
     # clipmodel, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='C:\\Repos\\finetuning\\logs\\ciccio\\checkpoints\\epoch_3.pt', device=device)
-    # clipmodel, _, preprocess = open_clip.create_model_and_transforms('xlm-roberta-base-ViT-B-32', pretrained='laion5b_s13b_b90k', device=device)
-    tokenizer = open_clip.get_tokenizer('ViT-B-32')
+    clipmodel, _, preprocess = open_clip.create_model_and_transforms('xlm-roberta-base-ViT-B-32', pretrained='laion5b_s13b_b90k', device=device)
+    # tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
 
     duration = time.perf_counter() - start_time
     print(f'Duration load model = {duration}')
     
     with open('.\image_embeddings\catalog-product-all.json',  encoding="utf8") as user_file:
-        parsed_json = json.load(user_file)[:250]
+        parsed_json = json.load(user_file)[:1000000]
     
     #for row in tqdm(parsed_json, desc='Processing json', total=len(parsed_json)):
     for row in tqdm(parsed_json, desc='Processing json', total=len(parsed_json)):
@@ -114,6 +111,7 @@ def main():
             image = Image.open(filepath)
             embeddings = clip_image_embedding(image, preprocess, clipmodel, device).tolist()
             # text = f"{row['Name']['Value']['en']} {row['ShortDescription']['Value']['en']} by {row['Manufacturer']['Name']}"
+            text = f"passage: {row['Name']['Value']['en']} {row['Categories'][0]['NameSingular']['en']} ({', '.join([x['NameSingular']['en'] for x in row['Attributes']])}), produced by {row['Manufacturer']['Name']}{', design by ' if row['Designers'] else ''}{' '.join([x['Name'] for x in row['Designers']])}"
             doc = {
                 'product_id' : row['_id'],
                 'product_name': row['Name']['Value']['en'],
@@ -124,7 +122,9 @@ def main():
                 'cover_embeddings': embeddings,
                 # 'relative_path': os.path.relpath(filepath).split(PREFIX)[1],
                 # 'images': [image_map(x) for x in row['Images']],
-                # 'text_embeddings': clip_text_embedding(text, clipmodel, tokenizer, device).tolist()
+                # 'text_embeddings': clip_text_embedding(text, clipmodel, tokenizer, device).tolist(),
+                'text_embeddings': st_model.encode(text, convert_to_tensor=True, device=device).tolist(),
+                #'passage_text': text
             }
             
             lst.append(doc)
@@ -225,13 +225,13 @@ def clip_image_embedding(image, preprocess, model, device):
         image_features = model.encode_image(pre)[0]
     return image_features
 
-def transformer_image_embedding(image, model:CLIPModel, processor:CLIPProcessor, device):
-    inputs = processor(images=image, return_tensors="pt", padding=True)
-    with torch.no_grad():
-        image_features = model.get_image_features(**inputs.to(device))[0]
-    return image_features
+# def transformer_image_embedding(image, model:CLIPModel, processor:CLIPProcessor, device):
+#     inputs = processor(images=image, return_tensors="pt", padding=True)
+#     with torch.no_grad():
+#         image_features = model.get_image_features(**inputs.to(device))[0]
+#     return image_features
 
-def clip_text_embedding(text, model:CLIPModel, tokenizer, device):
+def clip_text_embedding(text, model, tokenizer, device):
     tokens = tokenizer(text).to(device)
     return model.encode_text(tokens)[0]
     

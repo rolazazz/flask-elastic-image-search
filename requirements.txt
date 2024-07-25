@@ -18,9 +18,9 @@ python-dotenv~=1.0.0
 
 
 # Eland for import NLP models
-torch==2.2.0
+# torch==2.2.0
 open-clip-torch==2.24.0
-sentence-transformers~=2.2.2
+sentence-transformers~=2.6.1
 #multilingual-clip==1.0.10
 #eland>=8,<9bv
 

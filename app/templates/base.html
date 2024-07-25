@@ -42,14 +42,20 @@
                 </a>
             </div>
             <div class="nav-center">
-                <a href="{{ url_for('image_search') }}" class="nav-tab-link w-inline-block">
+				<a href="{{ url_for('hybrid_search') }}" class="nav-tab-link w-inline-block">
+                    <div>Hybrid Search</div>
+                </a>
+                <a href="{{ url_for('semantic_search') }}" class="nav-tab-link w-inline-block">
+                    <div>Semantic Search</div>
+                </a>
+				<a href="{{ url_for('image_search') }}" class="nav-tab-link w-inline-block">
                     <div>Image Search</div>
                 </a>
                 <a href="{{ url_for('reverse_search') }}" class="nav-tab-link w-inline-block">
                     <div>Reverse Image Search</div>
                 </a>
                 <a href="" class="nav-tab-link w-inline-block">
-                    <div>Auto Caption</div>
+                    <div><s>Auto Caption</s></div>
                 </a>
             </div>
             <div class="nav-right">

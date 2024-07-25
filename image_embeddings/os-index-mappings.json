@@ -29,19 +29,20 @@
 		"relative_path" : {
 		  "type" : "keyword"
 		},
+
 		"text_embeddings": {
 			"type": "knn_vector",
-			"dimension": 768,
+			"dimension": 1024,
 			"method": {
 				"name": "hnsw",
-				"space_type": "l2",
+				"space_type": "cosinesimil",
 				"engine": "nmslib",
 				"parameters": {"ef_construction": 512, "m": 16}
 			}
 		},
 		"cover_embeddings": {
 			"type": "knn_vector",
-			"dimension": 768,
+			"dimension": 512,
 			"method": {
 			  "name": "hnsw",
 			  "space_type": "cosinesimil",
@@ -64,7 +65,7 @@
 			},
 			"image_embedding": {
 				"type": "knn_vector",
-				"dimension": 768,
+				"dimension": 512,
 				"method": {
 					"name": "hnsw",
 					"space_type": "cosinesimil",

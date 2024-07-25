@@ -1,4 +1,4 @@
-from app import app, clipmodel, preprocess, tokenizer, es, device
+from app import app, clipmodel, preprocess, tokenizer, es, device, st_model
 from flask import render_template, redirect, url_for, request, send_file
 from app.searchForm import SearchForm
 from app.inputFileForm import InputFileForm
@@ -14,7 +14,7 @@ import torch
 INFER_ENDPOINT = "/_ml/trained_models/{model}/deployment/_infer"
 INFER_MODEL_IM_SEARCH = 'sentence-transformers__clip-vit-b-32-multilingual-v1'
 
-INDEX_IM_EMBED = 'embeddings-openclip-b-32'
+INDEX_IM_EMBED = 'openclip-b-32-xlm-roberta-base-multilingual-e5-large'
 
 HOST = app.config['ELASTICSEARCH_HOST']
 AUTH = (app.config['ELASTICSEARCH_USER'], app.config['ELASTICSEARCH_PASSWORD'])
@@ -31,6 +31,82 @@ app_models[INFER_MODEL_IM_SEARCH] = 'started'
 def index():
     form = SearchForm()
     return render_template('index.html', title='Home', form=form)
+
+
+@app.route('/hybrid_search', methods=['GET', 'POST'])
+def hybrid_search():
+    global app_models
+    #is_model_up_and_running(INFER_MODEL_IM_SEARCH)
+
+    index_name = INDEX_IM_EMBED
+    if not es.indices.exists(index=index_name):
+        return render_template('hybrid_search.html', title='Hybrid search', model_up=False,
+                               index_name=index_name, missing_index=True)
+
+    if app_models.get(INFER_MODEL_IM_SEARCH) == 'started':
+        form = SearchForm()
+
+        # Check for  method
+        if request.method == 'POST':
+
+            if form.validate_on_submit():
+                #embeddings = sentence_embedding(form.searchbox.data)
+                # embeddings = sentence_embedding_ex(form.searchbox.data, img_model)
+                # embeddings = sentence_embedding_ml(form.searchbox.data, ml_model, ml_tokenizer)
+                clip_embeddings = clip_text_embedding(form.searchbox.data, clipmodel, tokenizer, device).tolist()
+                st_embeddings = st_model.encode('query:' +form.searchbox.data, convert_to_tensor=True, device=device).tolist()
+                print(clip_embeddings)
+                print(st_embeddings)
+                search_response = knn_hybrid_search(form.searchbox.data, clip_embeddings, st_embeddings)
+
+                return render_template('hybrid_search.html', title='Hybrid search', form=form,
+                                       search_results=search_response['hits']['hits'],
+                                       query=form.searchbox.data,  model_up=True)
+
+            else:
+                return redirect(url_for('hybrid_search'))
+        else:  # GET
+            return render_template('hybrid_search.html', title='Hybrid search', form=form, model_up=True)
+    else:
+        return render_template('hybrid_search.html', title='Hybrid search', model_up=False, model_name=INFER_MODEL_IM_SEARCH)
+
+
+@app.route('/semantic_search', methods=['GET', 'POST'])
+def semantic_search():
+    global app_models
+    #is_model_up_and_running(INFER_MODEL_IM_SEARCH)
+
+    index_name = INDEX_IM_EMBED
+    if not es.indices.exists(index=index_name):
+        return render_template('semantic_search.html', title='Hybrid search', model_up=False,
+                               index_name=index_name, missing_index=True)
+
+    if app_models.get(INFER_MODEL_IM_SEARCH) == 'started':
+        form = SearchForm()
+
+        # Check for  method
+        if request.method == 'POST':
+
+            if form.validate_on_submit():
+                #embeddings = sentence_embedding(form.searchbox.data)
+                # embeddings = sentence_embedding_ex(form.searchbox.data, img_model)
+                # embeddings = sentence_embedding_ml(form.searchbox.data, ml_model, ml_tokenizer)
+                # clip_embeddings = clip_text_embedding(form.searchbox.data, clipmodel, tokenizer, device).tolist()
+                st_embeddings = st_model.encode('query:' +form.searchbox.data, convert_to_tensor=True, device=device).tolist()
+                # print(clip_embeddings)
+                print(st_embeddings)
+                search_response = knn_semantic_search(form.searchbox.data, st_embeddings)
+
+                return render_template('semantic_search.html', title='Hybrid search', form=form,
+                                       search_results=search_response['hits']['hits'],
+                                       query=form.searchbox.data,  model_up=True)
+
+            else:
+                return redirect(url_for('semantic_search'))
+        else:  # GET
+            return render_template('semantic_search.html', title='Hybrid search', form=form, model_up=True)
+    else:
+        return render_template('semantic_search.html', title='Hybrid search', model_up=False, model_name=INFER_MODEL_IM_SEARCH)
 
 
 @app.route('/image_search', methods=['GET', 'POST'])
@@ -95,9 +171,9 @@ def image_search():
                 #embeddings = sentence_embedding(form.searchbox.data)
                 # embeddings = sentence_embedding_ex(form.searchbox.data, img_model)
                 # embeddings = sentence_embedding_ml(form.searchbox.data, ml_model, ml_tokenizer)
-                embeddings = clip_text_embedding(form.searchbox.data, clipmodel, tokenizer, device).tolist()
-                print(embeddings)
-                search_response = knn_search_text(form.searchbox.data, embeddings)
+                clip_embeddings = clip_text_embedding(form.searchbox.data, clipmodel, tokenizer, device).tolist()
+                print(clip_embeddings)
+                search_response = knn_search_images(clip_embeddings)
 
                 return render_template('image_search.html', title='Image search', form=form,
                                        search_results=search_response['hits']['hits'],
@@ -187,10 +263,12 @@ def sentence_embedding(query: str):
     response = es.ml.infer_trained_model(model_id=INFER_MODEL_IM_SEARCH, docs=[{"text_field": query}])
     return response['inference_results'][0]
 
+
 def sentence_embedding_ex(query: str, model):
     text_emb = {}
     text_emb['predicted_value'] = model.encode(query)
     return text_emb
+
 
 def sentence_embedding_ml(query: str, model, tokenizer):
 	embeddings = model.forward(query, tokenizer).detach().numpy()
@@ -199,7 +277,6 @@ def sentence_embedding_ml(query: str, model, tokenizer):
 	text_emb['predicted_value'] = embeddings[0]
 	return text_emb
  
-
 
 def knn_search_images(dense_vector: list):
     source_fields = ["product_id", "product_name", "product_shortdescription", "manufacturer_name", "cover_id", "cover_name"]
@@ -226,7 +303,7 @@ def knn_search_images(dense_vector: list):
 	#     source=False)
     
     body = {
-        "size":50,
+        "size":200,
         "fields": source_fields,
         "query":{
             "bool":{
@@ -234,7 +311,7 @@ def knn_search_images(dense_vector: list):
                     {
 					"knn": {
 						"cover_embeddings":{
-							"k": 60,
+							"k": 500,
 							"vector": dense_vector
 						}
 					}}
@@ -250,7 +327,8 @@ def knn_search_images(dense_vector: list):
     print(f"Took: {response['took']} ms, Total results: {response['hits']['total']['value']}")
     return response
 
-def knn_search_text(text, dense_vector: list):
+
+def knn_semantic_search(text, st_vector:list):
     source_fields = ["product_id", "product_name", "product_shortdescription", "manufacturer_name", "cover_id", "cover_name"]
 
     body = {
@@ -258,39 +336,238 @@ def knn_search_text(text, dense_vector: list):
         "fields": source_fields,
         "query":{
             "bool":{
-				"must" : [
-                    {
-					"knn": {
-						"cover_embeddings":{
-							"k": 50,
-							"vector": dense_vector
-						}
-					}}
-                    # ,
-                    # {
+				"should" : [
+					# {
 					# "knn": {
-					# 	"text_embeddings":{
-					# 		"k": 60,
-					# 		"vector": dense_vector
+					# 	"cover_embeddings":{
+					# 		"k": 50,
+					# 		"vector": clip_vector,
 					# 	}
 					# }}
+					# ,
+                    {
+					"knn": {
+						"text_embeddings":{
+							"k": 1000,
+							"vector": st_vector
+						}
+					}}
                     # ,
                  	# {
                     # "multi_match" : {
 					# 	"query": text, 
 					# 	"type": "cross_fields",
-					# 	"fields": [ "manufacturer_name", "product_name", "product_shortdescription" ],
-					# 	"operator":   "or"
+					# 	"fields": [ "manufacturer_name", "product_name" ],
+					# 	"operator": "or",
+                    #     "boost": 0.1
+					# }}
+                    # ,
+                 	# {
+                    # "term" : {
+					# 	"product_name": {
+                    #         "value":text,
+                    #         "boost": 0.1
+                    #     } 
+					# }}
+                    # ,
+                 	# {
+                    # "term" : {
+					# 	"manufacturer_name": {
+                    #         "value":text,
+                    #         "boost": 0.1
+                    #     } 
 					# }}
 				] 
 			}
         }
 	}
+    
+
+    # body = {
+    #     "size":200,
+    #     "fields": source_fields,
+    #     "query":{
+    #         "hybrid":{
+	# 			"queries" : [
+    #                 # {
+	# 				# 	"match": {
+	# 				# 		"manufacturer_name": {
+	# 				# 			"query": text
+	# 				# 		}
+	# 				# 	}
+	# 				# }
+    #              	# ,
+    #                 {"multi_match" : {
+	# 					"query": text, 
+	# 					"type": "cross_fields",
+	# 					"fields": [ "manufacturer_name", "product_name", ],
+	# 					"operator":   "or"
+	# 				}}
+    #                 ,
+    #                 {"knn": {
+	# 					"text_embeddings":{
+	# 						"k": 50,
+	# 						"vector": st_vector
+	# 					}
+	# 				}}
+
+	# 			] 
+	# 		}
+    #     }
+	# }
+
+    # body = {
+	# 	"size":200,
+	# 	"fields": source_fields,
+	# 	"query": {
+	# 		"script_score": {
+	# 			"query": {
+	# 			"match_all": {}
+	# 			},
+	# 			"script": {
+	# 				"source": "knn_score",
+	# 				"lang": "knn",
+	# 				"params": {
+	# 					"field": "text_embeddings",
+	# 					"query_value": st_vector,
+	# 					"space_type": "cosinesimil"
+	# 				}
+	# 			}
+	# 		}
+	# 	}
+	# }
+
 
     response = es.search(
         index=INDEX_IM_EMBED,
         body=body,
-        _source=False)
+        _source=False
+        # ,params={"search_pipeline":"nlp-search-pipeline"}
+        )
+    print(body)
+    print(f"Took: {response['took']} ms, Total results: {response['hits']['total']['value']}")
+    return response
+
+
+def knn_hybrid_search(text, clip_vector: list, st_vector:list):
+    source_fields = ["product_id", "product_name", "product_shortdescription", "manufacturer_name", "cover_id", "cover_name"]
+
+    body = {
+        "size":200,
+        "fields": source_fields,
+        # "min_score":1.65,
+        "query":{
+            "bool":{
+				"should" : [
+					{
+					"knn": {
+						"cover_embeddings":{
+							"k": 500,
+							"vector": clip_vector,
+                            "boost": 1.5
+						}
+					}}
+					,
+                    {
+					"knn": {
+						"text_embeddings":{
+							"k": 500,
+							"vector": st_vector,
+                            "boost": 1.0
+						}
+					}}
+                    # ,
+                 	# {
+                    # "multi_match" : {
+					# 	"query": text, 
+					# 	"type": "cross_fields",
+					# 	"fields": [ "manufacturer_name", "product_name" ],
+					# 	"operator": "or",
+                    #     "boost": 0.1
+					# }}
+                    ,
+                 	{
+                    "term" : {
+						"product_name": {
+                            "value":text,
+                            "boost": 0.1
+                        } 
+					}}
+                    ,
+                 	{
+                    "term" : {
+						"manufacturer_name": {
+                            "value":text,
+                            "boost": 0.1
+                        } 
+					}}
+				] 
+			}
+        }
+	}
+    
+
+    # body = {
+    #     "size":200,
+    #     "fields": source_fields,
+    #     "query":{
+    #         "hybrid":{
+	# 			"queries" : [
+    #                 # {
+	# 				# 	"match": {
+	# 				# 		"manufacturer_name": {
+	# 				# 			"query": text
+	# 				# 		}
+	# 				# 	}
+	# 				# }
+    #              	# ,
+    #                 {"multi_match" : {
+	# 					"query": text, 
+	# 					"type": "cross_fields",
+	# 					"fields": [ "manufacturer_name", "product_name", ],
+	# 					"operator":   "or"
+	# 				}}
+    #                 ,
+    #                 {"knn": {
+	# 					"text_embeddings":{
+	# 						"k": 50,
+	# 						"vector": st_vector
+	# 					}
+	# 				}}
+
+	# 			] 
+	# 		}
+    #     }
+	# }
+
+    # body = {
+	# 	"size":200,
+	# 	"fields": source_fields,
+	# 	"query": {
+	# 		"script_score": {
+	# 			"query": {
+	# 			"match_all": {}
+	# 			},
+	# 			"script": {
+	# 				"source": "knn_score",
+	# 				"lang": "knn",
+	# 				"params": {
+	# 					"field": "text_embeddings",
+	# 					"query_value": st_vector,
+	# 					"space_type": "cosinesimil"
+	# 				}
+	# 			}
+	# 		}
+	# 	}
+	# }
+
+
+    response = es.search(
+        index=INDEX_IM_EMBED,
+        body=body,
+        _source=False
+        # ,params={"search_pipeline":"nlp-search-pipeline"}
+        )
     print(body)
     print(f"Took: {response['took']} ms, Total results: {response['hits']['total']['value']}")
     return response

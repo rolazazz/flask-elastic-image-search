@@ -18,3 +18,19 @@ db.getCollection('product')
 
 
 
+db.getCollection('product')
+  .find(
+    {
+      'ProductStatus.Value': 10,
+      'Manufacturer.Visibility': { $gte: 2 }
+    },
+    {
+      'Name.Value.en': 1,
+      'ShortDescription.Value.en': 1,
+      'Manufacturer.Name': 1,
+      'CoverImage.FileName': 1,
+      'Designers.Name': 1,
+      'Categories.NameSingular': 1,
+      'Attributes.NameSingular': 1
+    }
+  )
